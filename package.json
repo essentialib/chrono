@@ -1,0 +1,45 @@
+{
+    "name": "ts-module-template",
+    "version": "1.0.0",
+    "description": "template for typescript module",
+    "main": "src/index.ts",
+    "directories": {
+        "example": "./examples",
+        "lib": "./src",
+        "dist": "./dist"
+    },
+    "scripts": {
+        "test": "vitest",
+        "build:all-in-one": "cross-env ALLINONE=true rollup --config rollup.config.mjs",
+        "build:no-all-in-one": "cross-env ALLINONE=false rollup --config rollup.config.mjs",
+        "build": "npm run build:all-in-one && npm run build:no-all-in-one"
+    },
+    "keywords": [
+        "template",
+        "typescript",
+        "module"
+    ],
+    "author": "rhseung",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/rhseung/ts-module-template/issues"
+    },
+    "homepage": "https://github.com/rhseung/ts-module-template#readme",
+    "devDependencies": {
+        "@babel/plugin-syntax-bigint": "^7.8.3",
+        "@babel/plugin-transform-named-capturing-groups-regex": "^7.25.7",
+        "@babel/preset-env": "^7.25.7",
+        "@rollup/plugin-babel": "^6.0.4",
+        "@rollup/plugin-replace": "^6.0.1",
+        "@rollup/plugin-typescript": "^12.1.0",
+        "babel": "^5.8.38",
+        "chalk": "^5.3.0",
+        "cross-env": "^7.0.3",
+        "rollup": "^4.24.0",
+        "rollup-plugin-dts": "^6.1.1",
+        "tslib": "^2.7.0",
+        "tsx": "^4.19.1",
+        "typescript": "^5.6.2",
+        "vitest": "^2.1.2"
+    }
+}

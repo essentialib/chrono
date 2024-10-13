@@ -1,0 +1,86 @@
+name: Release on version change
+
+on:
+  push:
+    paths:
+      - 'package.json'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build the project
+        run: npm run build
+
+      - name: Get package name and version
+        id: package_info
+        run: |
+          name=$(jq -r '.name' < package.json)
+          version=$(jq -r '.version' < package.json)
+          echo "name=$name" >> $GITHUB_OUTPUT
+          echo "version=$version" >> $GITHUB_OUTPUT
+
+      - name: Check if version is prerelease
+        id: prerelease_check
+        run: |
+          if [[ "${{ steps.package_info.outputs.version }}" == *"-"* ]]; then
+            echo "prerelease=true" >> $GITHUB_OUTPUT
+          else
+            echo "prerelease=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Prepare files for zipping
+        run: |
+          mkdir -p ${{ steps.package_info.outputs.name }}  # {name} 폴더 생성
+          cp -r dist/preserve/* ${{ steps.package_info.outputs.name }}/  # 소스코드를 {name} 폴더로 이동
+
+      - name: Zip {name} folder
+        run: |
+          zip -r ${{ steps.package_info.outputs.name }}-${{ steps.package_info.outputs.version }}.zip ${{ steps.package_info.outputs.name }}
+
+      - name: Rename index.js to {name}.js
+        run: mv dist/all/index.js dist/all/${{ steps.package_info.outputs.name }}.js
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # GitHub Token 설정
+        with:
+          tag_name: v${{ steps.package_info.outputs.version }}  # 릴리즈 태그
+          release_name: v${{ steps.package_info.outputs.version }}  # 릴리즈 이름
+          body: |
+            Automated release for version ${{ steps.package_info.outputs.version }}.
+          draft: false
+          prerelease: ${{ steps.prerelease_check.outputs.prerelease }}  # prerelease 값 동적 설정
+
+      - name: Upload {name}.js to release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # GitHub Token 설정
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: dist/all/${{ steps.package_info.outputs.name }}.js
+          asset_name: ${{ steps.package_info.outputs.name }}.js
+          asset_content_type: application/javascript
+
+      - name: Upload {name}-{version}.zip to release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # GitHub Token 설정
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ steps.package_info.outputs.name }}-${{ steps.package_info.outputs.version }}.zip
+          asset_name: ${{ steps.package_info.outputs.name }}-${{ steps.package_info.outputs.version }}.zip
+          asset_content_type: application/zip
