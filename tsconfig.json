@@ -19,9 +19,11 @@
         ]
     },
     "include": [
+        "examples/*.js",
         "src/**/*.ts",
         "api/api2.d.ts",
-        "api/android.d.ts"
+        "api/android.d.ts",
+        "api/util.d.ts"
     ],
     // Include all TypeScript files in src folder
     "exclude": [

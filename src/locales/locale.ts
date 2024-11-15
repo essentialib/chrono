@@ -1,20 +1,6 @@
-const IS_DIST = false;
-
-export const getLocale = () => Locale.of(IS_DIST ?
-    String(App.getContext().getResources().getConfiguration().locale.toString()) :
-    Intl.DateTimeFormat().resolvedOptions().locale
-);
-
-export const getLocaleFrom = (locale: LocaleLike) => {
-    if (typeof locale === "string") {
-        locale = Locale.of(locale);
-    }
-    return locale;
-}
-
 export abstract class Locale {
     protected _code: string;
-    protected static _map: { [key: string]: Locale } = {};
+
     protected constructor(code: string) {
         this._code = code;
     }
@@ -23,24 +9,27 @@ export abstract class Locale {
         return this._code;
     }
 
-    static of(code: string): Locale {
-        code = code.replaceAll('-', '_').toLowerCase();
-
-        if (!(code in Locale._map)) {
-            throw new Error(`Unsupported locale: ${code}`);
-        }
-        return Locale._map[code];
+    toString(): string {
+        return `Locale(${this._code})`;
     }
 
-    abstract dateFormat(year: string, month: string, day: string, dayOfWeek: string): string;
+    valueOf(): string {
+        return this._code;
+    }
+
+    // TODO: parser 폴더에서 구현한 parser, refiner 를 사용해서 각 locale 마다 parser 구현
+
+    // TODO: Intl locale 은 전부 추가하기
+
+    abstract dateFormat(year: string, month: string, day: string, weekday: string): string;
     abstract timeFormat(hour: string, minute: string, second: string, millisecond: string): string;
-    abstract dateTimeFormat(year: string, month: string, day: string, dayOfWeek: string, hour: string, minute: string, second: string, millisecond: string): string;
+    abstract dateTimeFormat(year: string, month: string, day: string, weekday: string, hour: string, minute: string, second: string, millisecond: string): string;
 
     abstract ampm: [string, string];
     abstract monthNames: string[];
     abstract shortMonthNames: string[];
-    abstract dayOfWeekNames: string[];
-    abstract shortDayOfWeekNames: string[];
+    abstract weekdayNames: string[];
+    abstract shortWeekdayNames: string[];
 }
 
 export type LocaleLike = string | Locale;

@@ -1,1 +1,1 @@
-export * from './ko_kr';
+export * from './ko-KR';
